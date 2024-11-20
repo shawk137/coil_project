@@ -2,6 +2,20 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
 import math
 
+m = 1
+cm = 0.01
+mm = 0.001
+mm2 = 1e-6
+A = 1
+kA = 1000
+kW = 1000
+GHz = 1e9
+bar = 1e5
+
+electron_mass = 9.1093837015e-31  # kg
+electron_charge = 1.602176634e-19  # C
+mu_0 = 1.25663706212e-6  # N*A^-2
+
 class coil_geometry:
     '''geometric object'''
     def __init__(self, name):
@@ -11,14 +25,25 @@ class coil_geometry:
         pass
 
 class rund(coil_geometry):
-    def __init__(self, name, winding_radius, inner_radius, number_of_windings_x, number_of_windings_y, spacing_between_windings):
+    def __init__(self, name, winding_radius, inner_radius, number_of_windings_x, number_of_windings_y, spacing_between_windings, filament_length = None, material = None):
         super().__init__(name)
         self.winding_radius = winding_radius
         self.inner_radius = inner_radius
         self.spacing_between_windings = spacing_between_windings
         self.number_of_windings_x = number_of_windings_x
         self.number_of_windings_y = number_of_windings_y
+        self.filament_length = filament_length
 
+        if material == 'copper':
+            self.specific_resistance = 1.68e-8  # Ohm*m @ 77°C
+        # heat capacity =
+        # heat conduction =
+        elif material == 'aluminum' or material == 'aluminium':
+            self.specific_resistance = 3.875e-8  # Ohm*m @ 77°C (source: https://hypertextbook.com/facts/2004/ValPolyakov.shtml)
+        # heat capacity =
+        # heat conduction =
+        if self.specific_resistance == None and self.filament_length != None:
+            raise Exception('Missing conductor material properties')
     @property
     def number_of_windings_total(self):
         return self.number_of_windings_x * self.number_of_windings_y
@@ -46,6 +71,10 @@ class rund(coil_geometry):
     @property
     def area_cooling(self):
         return math.pi * self.inner_radius ** 2
+
+    @property
+    def resistance(self):
+        return self.specific_resistance * self.filament_length/self.area_winding() * self.number_of_windings_total
 
     def draw_coil(self):
         fig, ax = plt.subplots(figsize=(8, 6))
@@ -90,7 +119,7 @@ class rund(coil_geometry):
         ax.add_patch(box)
 
         # Display important variables
-        important_variables = {'winding_adius': self.winding_radius, 'inner_radius': self.inner_radius, 'spacing_between_windings': self.spacing_between_windings, 'length_x': wire_spacing*self.number_of_windings_x-self.spacing_between_windings, 'length_y': wire_spacing*self.number_of_windings_y-self.spacing_between_windings}
+        important_variables = {'winding_radius': self.winding_radius, 'inner_radius': self.inner_radius, 'spacing_between_windings': self.spacing_between_windings, 'length_x': wire_spacing*self.number_of_windings_x-self.spacing_between_windings, 'length_y': wire_spacing*self.number_of_windings_y-self.spacing_between_windings}
         text = '\n'.join([f'{key}: {value}' for key, value in important_variables.items()])
         ax.text(self.len_x + self.winding_radius * 2, self.len_y / 2 - self.spacing_between_windings, text, fontsize=12, verticalalignment='center')
 
@@ -100,9 +129,9 @@ class rund(coil_geometry):
         ax.set_ylim(-self.winding_radius * 2, self.len_y + self.winding_radius * 2)
         ax.set_xlabel('X')
         ax.set_ylabel('Y')
-        ax.set_title('Coil with {} Windings of Bremsleitungen'.format(num_windings))
+        ax.set_title('Coil with {} Windings of {}'.format(num_windings, self.name))
         ax.axis('off')  # Turn off axes
-        plt.savefig(f"crosssections/{self.inner_radius}x{self.winding_radius}_crosssection")
+        plt.savefig(f"crosssections/{self.inner_radius}x{self.winding_radius}_crosssection.png")
 
 class rechteckig(coil_geometry):
     def __init__(self, name, winding_width, winding_height, cooling_width, cooling_height, number_of_windings_x, number_of_windings_y, spacing_between_windings):
@@ -195,3 +224,7 @@ class rechteckig(coil_geometry):
         ax.axis('off')  # Turn off axes
         plt.show()
 
+if __name__ == "__main__":
+    #argument order: "rund", winding_radius, inner_radius, number_of_windings_x, number_of_windings_y, space between coils = 2*isolator width
+    geometry = rund("Kupferlackdraht", 1*mm, 0*mm, 10, 14,0.1*mm, 1.07*m, 'copper')
+    geometry.draw_coil()
