@@ -82,7 +82,7 @@ if __name__ == "__main__":
           "And the min distance between coils is {:.3f} mm\n"
           "The factor for the design data is: {}\n\n"
           "The lengths of the coils are (in meter):\n{}".format(z, p, m * 1e+3, f, np.round(l, 4)))
-
+#trial
 
 
 
