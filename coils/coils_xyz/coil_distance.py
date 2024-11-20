@@ -52,7 +52,7 @@ def dimensions(dim_z_max=None,
         coil_shifted = np.roll(coil, 1, axis=0)
         dist = np.sqrt(np.sum((coil - coil_shifted) ** 2, axis=1))
         length[idx] = np.sum(dist)
-    return v
+    return dim_z, dim_plane, min_dist, length, scaling_factor
 
 if __name__ == "__main__":
     files = glob.glob("coilData\coil_coordinates?.txt")
@@ -77,7 +77,7 @@ if __name__ == "__main__":
             ax.scatter(new_points[0, i], new_points[1, i], new_points[2, i], marker="o")
         plt.show()
 
-    z, p, m, l, f = dimensions(scaling_factor=0.35)
+    z, p, m, l, f = dimensions(scaling_factor=0.2)
     print("\nThe dimension in z-direction is: {:.3f} m \nThe max dimension in the torroidal plane is: {:.3f} m\n"
           "And the min distance between coils is {:.3f} mm\n"
           "The factor for the design data is: {}\n\n"
