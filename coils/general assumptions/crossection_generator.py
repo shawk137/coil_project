@@ -1,6 +1,12 @@
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
 import math
+import os
+
+# current script path
+script_path = os.path.abspath(__file__)
+parent_folder = os.path.dirname(script_path)
+
 
 m = 1
 cm = 0.01
@@ -131,7 +137,7 @@ class rund(coil_geometry):
         ax.set_ylabel('Y')
         ax.set_title('Coil with {} Windings of {}'.format(num_windings, self.name))
         ax.axis('off')  # Turn off axes
-        plt.savefig(f"crosssections/{self.inner_radius}x{self.winding_radius}_crosssection.png")
+        plt.savefig(f"{parent_folder}/crosssections/{self.inner_radius}x{self.winding_radius}_crosssection.png")
 
 class rechteckig(coil_geometry):
     def __init__(self, name, winding_width, winding_height, cooling_width, cooling_height, number_of_windings_x, number_of_windings_y, spacing_between_windings):
