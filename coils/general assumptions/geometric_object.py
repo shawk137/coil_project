@@ -18,7 +18,7 @@ class rund(coil_geometry):
         self.spacing_between_windings = spacing_between_windings
         self.number_of_windings_x = number_of_windings_x
         self.number_of_windings_y = number_of_windings_y
-    
+
     @property
     def number_of_windings_total(self):
         return self.number_of_windings_x * self.number_of_windings_y
@@ -81,7 +81,7 @@ class rund(coil_geometry):
             if i == self.number_of_windings_x:
                 ax.text(x - self.inner_radius*1.1, y + 0.4*self.inner_radius, 'inner_radius', fontsize=12, verticalalignment='center')
                 ax.plot([x - self.inner_radius, x], [y, y], color='black', linewidth=1)
-                
+
 
         # Draw box around coils
         box = Rectangle((-self.spacing_between_windings, - self.spacing_between_windings), self.len_x, self.len_y, edgecolor='black', linewidth=1, fill=False)
@@ -119,7 +119,7 @@ class rechteckig(coil_geometry):
         self.len_x = (spacing_between_windings + self.winding_width) * self.number_of_windings_x + self.spacing_between_windings
         self.len_y = (spacing_between_windings + self.winding_height) * self.number_of_windings_y + self.spacing_between_windings
         self.total_area = self.len_x * self.len_y
-    
+
     def get_area_winding(self):
         return self.winding_width * self.winding_height - self.cooling_width * self.cooling_height
 
@@ -194,3 +194,8 @@ class rechteckig(coil_geometry):
         ax.set_title('Coil with {} Windings'.format(num_windings))
         ax.axis('off')  # Turn off axes
         plt.show()
+
+if __name__ == "__main__":
+    #argument order: "rund", winding_radius, inner_radius, number_of_windings_x, number_of_windings_y, isolation_width
+    geometry = rund("rund", winding_radius, inner_radius, number_of_windings_x, number_of_windings_y,
+                         isolation_width)
