@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import numpy as np
 from matplotlib.patches import Rectangle
 import math
 
@@ -25,13 +26,14 @@ class coil_geometry:
         pass
 
 class rund(coil_geometry):
-    def __init__(self, name, winding_radius, inner_radius, number_of_windings_x, number_of_windings_y, spacing_between_windings, filament_length = None, material = None):
+    def __init__(self, name, winding_radius, inner_radius, number_of_windings_x, number_of_windings_y, spacing_between_windings, current, filament_length = None, material = None):
         super().__init__(name)
         self.winding_radius = winding_radius
         self.inner_radius = inner_radius
         self.spacing_between_windings = spacing_between_windings
         self.number_of_windings_x = number_of_windings_x
         self.number_of_windings_y = number_of_windings_y
+        self.current = current
         self.filament_length = filament_length
 
         if material == 'copper':
@@ -74,7 +76,23 @@ class rund(coil_geometry):
 
     @property
     def resistance(self):
-        return self.specific_resistance * self.filament_length/self.area_winding() * self.number_of_windings_total
+        return self.specific_resistance * self.filament_length/self.area_winding * self.number_of_windings_total
+
+    '''@@property
+    def wallPressureX(self):
+        ''' '''
+        This function computes the pressure that acts on the wall due to the magnetic repulsion of the windings.
+        Alot of simplifications are made: Its calculated for infinetely long, straight, line like conductors. The force
+        acting on the conductor is the vector sum of the forces produced by all the other windings. The sum of the forces
+        acting on all wires in the left half is computed and divided by the area it acts on to get a pressure.
+        :return: wall pressure in x direction in Pa
+        ''' '''
+        F = np.zeros((2))
+        for i in range(self.number_of_windings_x):
+            for j in range(self.number_of_windings_y):
+                F_tot = self.current**2
+                F +=
+        return F/(self.len_y*1)'''
 
     def draw_coil(self):
         fig, ax = plt.subplots(figsize=(8, 6))
@@ -119,7 +137,7 @@ class rund(coil_geometry):
         ax.add_patch(box)
 
         # Display important variables
-        important_variables = {'winding_radius': self.winding_radius, 'inner_radius': self.inner_radius, 'spacing_between_windings': self.spacing_between_windings, 'length_x': wire_spacing*self.number_of_windings_x-self.spacing_between_windings, 'length_y': wire_spacing*self.number_of_windings_y-self.spacing_between_windings}
+        important_variables = {'winding_radius': self.winding_radius, 'inner_radius': self.inner_radius, 'spacing_between_windings': self.spacing_between_windings, 'length_x': wire_spacing*self.number_of_windings_x-self.spacing_between_windings, 'length_y': wire_spacing*self.number_of_windings_y-self.spacing_between_windings, 'total Resistance': self.resistance}
         text = '\n'.join([f'{key}: {value}' for key, value in important_variables.items()])
         ax.text(self.len_x + self.winding_radius * 2, self.len_y / 2 - self.spacing_between_windings, text, fontsize=12, verticalalignment='center')
 
@@ -225,6 +243,6 @@ class rechteckig(coil_geometry):
         plt.show()
 
 if __name__ == "__main__":
-    #argument order: "rund", winding_radius, inner_radius, number_of_windings_x, number_of_windings_y, space between coils = 2*isolator width
-    geometry = rund("Kupferlackdraht", 1*mm, 0*mm, 10, 14,0.1*mm, 1.07*m, 'copper')
+    #argument order: "rund", winding_radius, inner_radius, number_of_windings_x, number_of_windings_y, space between coils = 2*isolator width, current, filament_length, material)
+    geometry = rund("Kupferlackdraht", 1*mm, 0*mm, 10, 16,0.1*mm, 1064, 1.07*m, 'copper')
     geometry.draw_coil()

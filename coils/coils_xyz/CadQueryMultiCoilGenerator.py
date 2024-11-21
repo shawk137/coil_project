@@ -3,12 +3,13 @@ from windingCoordinateGenerator import *
 from tqdm import tqdm
 #this is a change
 #All units in mm according to Fusion360 STEP import standard
-xOuter = 40 #winding pack outermost dimension in B field direction
-yOuter = 67 #winding pack outermost dimension in radial direction
+xOuter = 20+1 #winding pack outermost dimension in B field direction
+yOuter = 32+1.6 #winding pack outermost dimension in radial direction
 wallTh = 2 #Steel casing wall thickness
+scalingFactor = 0.2
 
 #--------------Prepare coil coordinates and coordinate system along the filament----------------------------------------
-coilCoordList = loadAndScale('coilData\coil_coordinates0.txt', 12, 0.330*10) #*10 is to adjust scaling for step import (uses mm as basis)
+coilCoordList = loadAndScale('coilData\coil_coordinates0.txt', 12, scalingFactor*10) #*10 is to adjust scaling for step import (uses mm as basis)
 CGlist = coilCG(coilCoordList)
 circVecList=[]
 for i, xyzCoord in enumerate(coilCoordList):
@@ -62,7 +63,8 @@ for j in range(0,3):
         else:
             nextpart = wp1.loft(combine=True)
             result = result.union(nextpart)
-    exportname = r'C:\Users\Daniel\Documents\!Privat\Physik_Master\FusionReactorDesign\CqeditorCode\CustomCoilFat'+str(j)+'.step'
+    exportname = r'C:\Users\Daniel\Documents\!Privat\Physik_Master\RadiationAndPlasmaLab\Plasma\CoilSTEPs\CustomMiniCoil24x40'+str(j)+'.step'
+    #r'C:\Users\Daniel\Documents\!Privat\Physik_Master\RadiationAndPlasmaLab\Plasma\CoilSTEPs\CustomMiniCoil21x33_6_'+str(j)+'.step'
     cq.exporters.export(result, exportname)
 print('finished!')
 #Show object when using CQ-editor
