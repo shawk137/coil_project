@@ -7,6 +7,11 @@ This is the story of Magnetix. The roman empire streches across the european con
  currents in the coils, so that Megnetix' powers can thrive.
 """
 from windingCoordinateGenerator import *
+import os
+
+# current script path
+script_path = os.path.abspath(__file__)
+parent_folder = os.path.dirname(script_path)
 
 mu_0 = 1.25663706127e-6
 
@@ -92,8 +97,8 @@ def get_moments(coil_nr, coilCoordlist, I_list):
 
 if __name__ == "__main__":
     print('hi, how are you dooin?')
-    coil_nr = int(input("from which coil do you want to know the force?"))
-    coilCoordlist = loadAndScale('coilData\coil_coordinates0.txt', 12, 0.2/100) # [12, 160, 3] = [coils, points, xyz] !!!/100 bc: convert from fusion (cm) units!!!
+    coil_nr = 1#int(input("from which coil do you want to know the force?"))
+    coilCoordlist = loadAndScale(f'{parent_folder}/coilData/coil_coordinates0.txt', 12, 0.2/100) # [12, 160, 3] = [coils, points, xyz] !!!/100 bc: convert from fusion (cm) units!!!
     I1 = 1064#14.7e+3 #A
     I2 = 520#8.17e+3 #A
     I3 = 703#9.7e+3 #A
