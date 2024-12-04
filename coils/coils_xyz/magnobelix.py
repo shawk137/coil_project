@@ -9,6 +9,7 @@ This is the story of Magnobelix, the fat cousin of Magnetix. The roman empire st
 import numpy as np
 
 from windingCoordinateGenerator import *
+from tqdm import tqdm
 import os
 
 # current script path
@@ -85,7 +86,8 @@ def get_force(coil_nr, coilCoordlist, I_list, include_self=True):
 
 def get_magnitude_in_area(coilCoordlist, I_list, testPoints):
     B_field = np.zeros_like(testPoints)
-    for idx, point in enumerate(testPoints):
+    for idx in tqdm(range(len(testPoints))):
+        point = testPoints[idx]
         B = np.zeros((1, 3))
         for i, xyzCoord in enumerate(coilCoordlist):
             B += get_field(point, xyzCoord, I_list[i])
@@ -189,13 +191,14 @@ if __name__ == "__main__":
         I_list = np.repeat(I_list, windNr)
     else:
         windingCoordList = coilCoordlist
-    areax = 20
-    areay = 20
-    area3D, X, Y = points_in_area(areax,areay,0.02,[0,0.2,0],[0,0,1],[0,1,0])
-    print('area:', area3D)
+    areax = 50
+    areay = 50
+    area3D, X, Y = points_in_area(areax,areay,0.008,[0,0.2,0],[0,0,1],[0,1,0])
     mag_in_area = get_magnitude_in_area(windingCoordList, I_list, area3D)
     mag_in_area = np.reshape(mag_in_area, (areax,areay))
-    print(mag_in_area)
+    np.savetxt(f'{parent_folder}/magnitudeW.txt', mag_in_area)
+    np.savetxt(f'{parent_folder}/XW.txt', X)
+    np.savetxt(f'{parent_folder}/YW.txt', Y)
     plt.pcolormesh(X,Y,mag_in_area, vmin = 0, vmax= 0.015)
     plt.colorbar()
     plt.show()
