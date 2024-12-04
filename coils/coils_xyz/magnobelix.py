@@ -1,5 +1,5 @@
 """
-This is the story of Magnetix. The roman empire streches across the european continent. All of Gaul is under roman controll.
+This is the story of Magnobelix, the fat cousin of Magnetix. The roman empire streches across the european continent. All of Gaul is under roman controll.
  All of Gaul??? No! A small village has kept the romans out, thanks to Magnetix and his magix repelling force, that repells
  both romans and coils.
  Magnetix has one weakpoint however, his enemies must never find out. He can only cast his spells with all coils being in
@@ -104,7 +104,7 @@ def thick_coils_coordinates(coilCoordList, nr_x_windings, nr_y_windings, wire_di
     :return: list of numpy arrays containing xyz coil coordinates of the individual windings
     :return: number of windings
     """
-    
+    #--------------generate coordinates of the windings inside the crossection. (0,0) is the midpoint = filament
     x_points = np.linspace(-(nr_x_windings-1)/2*wire_diameter, (nr_x_windings-1)/2*wire_diameter, nr_x_windings)
     y_points = np.linspace(-(nr_y_windings-1)/2*wire_diameter, (nr_y_windings-1)/2*wire_diameter, nr_y_windings)
     crosssectionCoord = np.zeros((nr_x_windings*nr_y_windings, 2))
@@ -131,15 +131,12 @@ def thick_coils_coordinates(coilCoordList, nr_x_windings, nr_y_windings, wire_di
     steerVecList[11] = Y
     xDirList, yDirList, normalList = customOrientePlanes(coilCoordList, steerVecList)
     windingCoordlist = []   
-    for coil in coilCoordList:
-        for i in range(len(coilCoordList)):
-            windingCoordlist.append(coil+)
-    
-   
-    
-    
-
-    
+    for i in range(len(coilCoordList)):
+        coil = coilCoordList[i]
+        xDir = xDirList[i]
+        yDir = yDirList[i]
+        for j in range(len(crosssectionCoord)):
+            windingCoordlist.append(coil+crosssectionCoord[j,0]*xDir+crosssectionCoord[j,1]*yDir)
     return windingCoordlist, nr_x_windings * nr_y_windings
 
 
@@ -147,7 +144,7 @@ if __name__ == "__main__":
     print('hi, how are you dooin?')
     coil_nr = 1 #int(input("from which coil do you want to know the force?"))
     coilCoordlist = loadAndScale(f'{parent_folder}/coilData/coil_coordinates0.txt', 12, 0.2/100) # [12, 160, 3] = [coils, points, xyz] !!!/100 bc: convert from fusion (cm) units!!!
-    thick_coils_coordinates(coilCoordlist, nr_x_windings=16, nr_y_windings=10, wire_diameter=2.1)
+    windingCoordList, windNr = thick_coils_coordinates(coilCoordlist, nr_x_windings=16, nr_y_windings=10, wire_diameter=2.1)
     I1 = 1064#14.7e+3 #A
     I2 = 520#8.17e+3 #A
     I3 = 703#9.7e+3 #A
