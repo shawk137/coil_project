@@ -149,8 +149,8 @@ if __name__ == "__main__":
     I2 = 520#8.17e+3 #A
     I3 = 703#9.7e+3 #A
     I_list = np.array([I1, I2, I3, -I3, -I2, -I1, I1, I2, I3, -I3, -I2, -I1])
-    I_winding_list = I_list / windNr
-    I_winding_list = np.repeat(I_winding_list, windNr)
+    I_list = I_list / windNr
+    I_list = np.repeat(I_list, windNr)
     force = get_force(coil_nr, coilCoordlist, I_list)
     moment = get_moments(coil_nr, coilCoordlist, I_list)
     total_moment = np.sqrt(np.sum(moment**2))
