@@ -6,6 +6,8 @@ This is the story of Magnobelix, the fat cousin of Magnetix. The roman empire st
  the corrext order. Sometimes he forgets and has to recharge his powers with Danix. Only Danix knows how to correct the
  currents in the coils, so that Megnetix' powers can thrive.
 """
+import numpy as np
+
 from windingCoordinateGenerator import *
 import os
 
@@ -14,7 +16,9 @@ script_path = os.path.abspath(__file__)
 parent_folder = os.path.dirname(script_path)
 
 mu_0 = 1.25663706127e-6
-
+mm = 0.001
+cm = 0.01
+m = 1
 
 def wire_vectors(xyzCoord):
     """
@@ -79,6 +83,15 @@ def get_force(coil_nr, coilCoordlist, I_list, include_self=True):
         force_cut[idx_cut, :] = I_list[coil_nr] * np.cross(cut_vectors[idx_cut], B)
     return force_cut
 
+def get_magnitude_in_area(coilCoordlist, I_list, testPoints):
+    B_field = np.zeros_like(testPoints)
+    for idx, point in enumerate(testPoints):
+        B = np.zeros((1, 3))
+        for i, xyzCoord in enumerate(coilCoordlist):
+            B += get_field(point, xyzCoord, I_list[i])
+        B_field[idx] = B
+    return np.linalg.norm(B_field, axis=1)
+
 
 def get_moments(coil_nr, coilCoordlist, I_list):
     """
@@ -94,6 +107,24 @@ def get_moments(coil_nr, coilCoordlist, I_list):
     moment = np.sum(np.cross(dist, force), axis=0)
     return moment
 
+def points_in_area(x_nr, y_nr, dist, center, xDir, yDir):
+    xDir = np.asarray(xDir)
+    xDir =xDir / np.linalg.norm(xDir)
+    yDir = np.asarray(yDir)
+    yDir = yDir / np.linalg.norm(yDir)
+    x_points = np.linspace(-(x_nr - 1) / 2 * dist, (x_nr - 1) / 2 * dist,
+                           x_nr)
+    y_points = np.linspace(-(y_nr - 1) / 2 * dist, (y_nr - 1) / 2 * dist,
+                           y_nr)
+    areaCoord = np.zeros((x_nr * y_nr, 2))
+    for i in range(x_nr):
+        for j in range(y_nr):
+            areaCoord[i * y_nr + j, :] = [x_points[i], y_points[j]]
+    #points2D = np.reshape(areaCoord,(x_nr,y_nr))
+    points3D = np.zeros((x_nr*y_nr, 3))
+    for j in range(len(areaCoord)):
+        points3D[j,:] = center + areaCoord[j, 0] * xDir + areaCoord[j, 1] * yDir
+    return points3D, np.linalg.norm(center)+x_points, np.linalg.norm(center)+y_points #Sis is a great deal of pfusch regarding the center offset.
 
 def thick_coils_coordinates(coilCoordList, nr_x_windings, nr_y_windings, wire_diameter):
     """ 
@@ -142,50 +173,29 @@ def thick_coils_coordinates(coilCoordList, nr_x_windings, nr_y_windings, wire_di
 
 if __name__ == "__main__":
     print('hi, how are you dooin?')
-    coil_nr = 1 #int(input("from which coil do you want to know the force?"))
+    indWindings = True
+    if indWindings:
+        print('calculating Magnetic Field from individualwindings = fat coils')
+    else:
+        print('calculacting magnetic field from infinitely sthin filaments')
     coilCoordlist = loadAndScale(f'{parent_folder}/coilData/coil_coordinates0.txt', 12, 0.2/100) # [12, 160, 3] = [coils, points, xyz] !!!/100 bc: convert from fusion (cm) units!!!
-    windingCoordList, windNr = thick_coils_coordinates(coilCoordlist, nr_x_windings=16, nr_y_windings=10, wire_diameter=2.1)
+    windingCoordList, windNr = thick_coils_coordinates(coilCoordlist, nr_x_windings=16, nr_y_windings=10, wire_diameter=2.1*mm)
     I1 = 1064#14.7e+3 #A
     I2 = 520#8.17e+3 #A
     I3 = 703#9.7e+3 #A
     I_list = np.array([I1, I2, I3, -I3, -I2, -I1, I1, I2, I3, -I3, -I2, -I1])
-    I_list = I_list / windNr
-    I_list = np.repeat(I_list, windNr)
-    force = get_force(coil_nr, coilCoordlist, I_list)
-    moment = get_moments(coil_nr, coilCoordlist, I_list)
-    total_moment = np.sqrt(np.sum(moment**2))
-    print("The total moment for coil {} is {:.3f} Nm\nThe components are: \n{} Nm\n".format(coil_nr, total_moment, np.round(moment, 3)))
-    if True: #3D Plot
-        ax = plt.figure().add_subplot(projection='3d')
-        CGlist = coilCG(coilCoordlist)
-        for i in range(len(coilCoordlist)):
-            #panCk = pancakeCoordList[i]
-            cl = coilCoordlist[i]
-            #ax.plot(panCk[:,0], panCk[:,1], panCk[:,2], label='pancake')
-            ax.plot(cl[:, 0], cl[:, 1], cl[:, 2], label='coil_{}'.format(i))
-            CG = CGlist[i]
-            vec = get_field(CG, cl, I_list[i])
-            #print('Bfield in CG', str(i), ' ', np.linalg.norm(vec))
-            # vecList = CGvectors(CGlist)
-            # vec = vecList[i] * 20
-            vec *= 1e+0
-            #print("len:", np.linalg.norm(vec))
-            ax.plot([CG[0], CG[0]+vec[0]], [CG[1], CG[1]+vec[1]], [CG[2], CG[2]+vec[2]])
-            ax.plot(CG[0], CG[1], CG[2],'.')
-        mp = wire_mid_points(coilCoordlist[coil_nr])
-        plot_force = 1e-2*force
-        force_tot = np.sum(force, axis=0)
-        plot_force_tot = force_tot * 1e-3
-        print("total force = {} N".format(np.round(force_tot, 3)))
-        print("total force magnitude = {:.3f} N".format(np.linalg.norm(force_tot)))
-        ax.plot([CGlist[coil_nr][0], CGlist[coil_nr][0]+plot_force_tot[0]],
-                [CGlist[coil_nr][1], CGlist[coil_nr][1]+plot_force_tot[1]],
-                [CGlist[coil_nr][2], CGlist[coil_nr][2]+plot_force_tot[2]], color="black", label="total force")
-        plot_moment = moment * 1e-2
-        ax.plot([CGlist[coil_nr][0], CGlist[coil_nr][0] + plot_moment[0]],
-                [CGlist[coil_nr][1], CGlist[coil_nr][1] + plot_moment[1]],
-                [CGlist[coil_nr][2], CGlist[coil_nr][2] + plot_moment[2]], color="blue", label="total moment")
-        for idx, point in enumerate(mp):
-            ax.plot([point[0], point[0] + plot_force[idx, 0]], [point[1], point[1] + plot_force[idx, 1]], [point[2], point[2] + plot_force[idx, 2]])
-        ax.legend()
-        plt.show()
+    if indWindings:
+        I_list = I_list / windNr
+        I_list = np.repeat(I_list, windNr)
+    else:
+        windingCoordList = coilCoordlist
+    areax = 20
+    areay = 20
+    area3D, X, Y = points_in_area(areax,areay,0.02,[0,0.2,0],[0,0,1],[0,1,0])
+    print('area:', area3D)
+    mag_in_area = get_magnitude_in_area(windingCoordList, I_list, area3D)
+    mag_in_area = np.reshape(mag_in_area, (areax,areay))
+    print(mag_in_area)
+    plt.pcolormesh(X,Y,mag_in_area, vmin = 0, vmax= 0.015)
+    plt.colorbar()
+    plt.show()
