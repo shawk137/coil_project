@@ -191,7 +191,24 @@ if __name__ == "__main__":
         I_list = np.repeat(I_list, windNr)
     else:
         windingCoordList = coilCoordlist
-    areax = 50
+
+    #Mag Field on the plasma boundary
+    scale = 0.2
+    offsetY = 0.2
+
+    n = np.arange(0, 256, 8)
+    n = np.append(n, n[0])  # close the loop
+    testPoints = np.zeros((len(n),3))
+    x = np.loadtxt('coilData/surface1.txt') * scale
+    testPoints[:, 0] = x[n]
+    y = np.loadtxt('coilData/surface2.txt') * scale
+    testPoints[:, 1] = y[n]
+    z = np.loadtxt('coilData/surface3.txt') * scale + offsetY
+    testPoints[:, 2] = z[n]
+    mag_in_area = get_magnitude_in_area(windingCoordList, I_list, testPoints)
+    np.savetxt(f'{parent_folder}/plasmaW.txt', mag_in_area)
+    #Mag Field calculation on a crossection plane
+    '''areax = 50
     areay = 50
     area3D, X, Y = points_in_area(areax,areay,0.008,[0,0.2,0],[0,0,1],[0,1,0])
     mag_in_area = get_magnitude_in_area(windingCoordList, I_list, area3D)
@@ -201,4 +218,4 @@ if __name__ == "__main__":
     np.savetxt(f'{parent_folder}/YW.txt', Y)
     plt.pcolormesh(X,Y,mag_in_area, vmin = 0, vmax= 0.015)
     plt.colorbar()
-    plt.show()
+    plt.show()'''
